@@ -8,7 +8,7 @@ enum class ParameterCategory(
     val prefixes: List<String>
 ) {
     QUADPLANE(
-        "QuadPlane (Q_)",
+        "QuadPlane / VTOL",
         Color.rgb(138, 43, 226),  // Blue Violet
         listOf("Q_")
     ),
@@ -98,7 +98,7 @@ enum class ParameterCategory(
         listOf("AIRSPEED_", "ARSPD", "ASPD_")
     ),
     OTHER(
-        "Other Parameters",
+        "Misc Parameters",
         Color.rgb(169, 169, 169), // Dark Gray
         listOf()
     );

@@ -5,12 +5,13 @@ A JavaFX application built with Kotlin for filtering and extracting Ardupilot pa
 ## Features
 
 - **Three-Pane Layout**:
-  - **Left Pane**: Displays all parameters from the loaded file with color-coded rows based on parameter category
+  - **Left Pane**: Displays all parameters from the loaded file with color-coded rows with individual checkboxes based on parameter category
   - **Middle Pane**: Category selection checkboxes to filter parameters
-  - **Right Pane**: Displays filtered parameters based on selected categories
+  - **Right Pane**: Displays filtered parameters based on selected categories or sections of categories
+
 
 - **Parameter Categories**:
-  - QuadPlane (Q_) - Purple
+  - QuadPlane / VTOL - Purple
   - PID Controllers (Attitude) - Crimson
   - PID Controllers (Position) - Orange Red
   - TECS (Energy Control) - Teal
@@ -28,40 +29,14 @@ A JavaFX application built with Kotlin for filtering and extracting Ardupilot pa
   - System & Scheduler - Dim Gray
   - Terrain Following - Yellow Green
   - Airspeed Control - Cornflower Blue
-  - Other Parameters - Dark Gray
-
-## Building and Running
-
-### Prerequisites
-
-- JDK 17 or higher
-- Maven 3.6 or higher
-- IntelliJ IDEA (recommended)
-
-### Build with Maven
-
-```bash
-mvn clean compile
-```
-
-### Run the Application
-
-```bash
-mvn javafx:run
-```
-
-### Build JAR
-
-```bash
-mvn clean package
-```
+  - Misc Parameters - Dark Gray
 
 ## Usage
 
-1. **Open Parameter File**: Click the "Open Parameter File" button and select an Ardupilot parameter file (`.param`, `.parm`, or `.txt`)
+1. **Open Parameter File**: Click the "Open file" button and select an Ardupilot parameter file (`.param`, `.parm`, or `.txt`)
 2. **View Parameters**: All parameters will be displayed in the left pane with color-coding based on their category
-3. **Filter Parameters**: Use the checkboxes in the middle pane to select which categories to include in the filtered output
-4. **Export Filtered Parameters**: Click "Export Filtered Parameters" to save the filtered parameters to a new file
+3. **Filter Parameters**: Use the checkboxes in the middle pane to select which categories to include in the filtered output, or select individual parameters to include in the left pane
+4. **Export Filtered Parameters**: Click "Export" to save the filtered parameters to a new file
 
 ## Parameter File Format
 
@@ -82,21 +57,6 @@ Comments (lines starting with `#`) and empty lines are ignored.
 ## Sample File
 
 A sample parameter file (`sample_parameters.param`) is included in the repository for testing purposes.
-
-## Project Structure
-
-```
-src/main/kotlin/com/ardupilot/paramextractor/
-├── MainApp.kt                      # Application entry point
-├── model/
-│   ├── Parameter.kt                # Parameter data class
-│   └── ParameterCategory.kt        # Parameter category enum with colors
-├── service/
-│   └── ParameterParser.kt          # Parameter file parser
-└── ui/
-    ├── MainController.kt           # Main UI controller
-    └── ParameterRow.kt             # Custom parameter row component
-```
 
 ## IntelliJ IDEA Setup
 
