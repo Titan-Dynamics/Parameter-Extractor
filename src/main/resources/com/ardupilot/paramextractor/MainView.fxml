@@ -37,13 +37,7 @@
 
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Original Parameters" />
 
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
-                <VBox fx:id="leftPane" spacing="5">
-                    <padding>
-                        <Insets bottom="5" left="5" right="5" top="5" />
-                    </padding>
-                </VBox>
-            </ScrollPane>
+            <ListView fx:id="leftListView" VBox.vgrow="ALWAYS" />
         </VBox>
 
         <!-- Middle Pane: Category Filters -->
@@ -79,13 +73,7 @@
 
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Filtered Parameters" />
 
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
-                <VBox fx:id="rightPane" spacing="5">
-                    <padding>
-                        <Insets bottom="5" left="5" right="5" top="5" />
-                    </padding>
-                </VBox>
-            </ScrollPane>
+            <ListView fx:id="rightListView" VBox.vgrow="ALWAYS" />
         </VBox>
     </HBox>
 </VBox>

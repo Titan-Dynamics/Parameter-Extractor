@@ -26,9 +26,9 @@ class MainViewController : Initializable {
     @FXML private lateinit var fileNameLabel: Label
     @FXML private lateinit var searchField: TextField
     @FXML private lateinit var exportButton: Button
-    @FXML private lateinit var leftPane: VBox
+    @FXML private lateinit var leftListView: ListView<Parameter>
     @FXML private lateinit var categoryPane: VBox
-    @FXML private lateinit var rightPane: VBox
+    @FXML private lateinit var rightListView: ListView<Parameter>
 
     private val parameterParser = ParameterParser()
     private var allParameters = listOf<Parameter>()
@@ -45,8 +45,37 @@ class MainViewController : Initializable {
     var stage: Stage? = null
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
+        setupListViews()
         setupSearchListener()
         updateExportButtonState()
+    }
+
+    private fun setupListViews() {
+        // Set cell factory for left list (with checkboxes)
+        leftListView.setCellFactory {
+            ParameterCell(
+                { param, selected -> onParameterSelectionChanged(param, selected) },
+                showCheckbox = true,
+                selectedParameters = selectedParameters
+            )
+        }
+
+        // Set cell factory for right list (without checkboxes)
+        rightListView.setCellFactory {
+            ParameterCell(
+                { _, _ -> },
+                showCheckbox = false,
+                selectedParameters = selectedParameters
+            )
+        }
+
+        // Remove selection model visuals
+        leftListView.selectionModel.selectedItemProperty().addListener { _, _, _ ->
+            leftListView.selectionModel.clearSelection()
+        }
+        rightListView.selectionModel.selectedItemProperty().addListener { _, _, _ ->
+            rightListView.selectionModel.clearSelection()
+        }
     }
 
     private fun setupSearchListener() {
@@ -104,10 +133,8 @@ class MainViewController : Initializable {
             it.isSelected = true
             it.isIndeterminate = false
         }
-        parameterRows.forEach {
-            it.checkBox.isSelected = true
-            selectedParameters.add(it.parameter)
-        }
+        selectedParameters.addAll(allParameters)
+        leftListView.refresh()
         isUpdating = false
         scheduleFilterUpdate()
     }
@@ -119,10 +146,8 @@ class MainViewController : Initializable {
             it.isSelected = false
             it.isIndeterminate = false
         }
-        parameterRows.forEach {
-            it.checkBox.isSelected = false
-            selectedParameters.remove(it.parameter)
-        }
+        selectedParameters.clear()
+        leftListView.refresh()
         isUpdating = false
         scheduleFilterUpdate()
     }
@@ -201,7 +226,7 @@ class MainViewController : Initializable {
             }
         }
 
-        displayParameters(leftPane, filteredBySearch)
+        displayParameters(leftListView, filteredBySearch)
         updateFilteredParameters()
         updateExportButtonState()
     }
@@ -316,29 +341,19 @@ class MainViewController : Initializable {
             }
         }
 
-        // Update individual checkboxes
-        parameterRows.filter { it.parameter.category == category }
-            .forEach { it.checkBox.isSelected = shouldSelect }
+        // Refresh ListView to update checkboxes
+        leftListView.refresh()
 
         isUpdating = false
         scheduleFilterUpdate()
     }
 
-    private fun displayParameters(pane: VBox, parameters: List<Parameter>) {
-        pane.children.clear()
+    private fun displayParameters(listView: ListView<Parameter>, parameters: List<Parameter>) {
         parameterRows.clear()
+        listView.items.setAll(parameters)
 
-        parameters.forEach { parameter ->
-            val row = ParameterRow(
-                parameter = parameter,
-                onSelectionChanged = { param, selected ->
-                    onParameterSelectionChanged(param, selected)
-                }
-            )
-            row.checkBox.isSelected = parameter in selectedParameters
-            parameterRows.add(row)
-            pane.children.add(row)
-        }
+        // Force refresh to update checkbox states
+        listView.refresh()
     }
 
     private fun updateFilteredParameters() {
@@ -352,13 +367,7 @@ class MainViewController : Initializable {
         }
 
         val sorted = filteredBySearch.sortedBy { it.name }
-
-        // Clear and rebuild in batch
-        rightPane.children.clear()
-        val newRows = sorted.map { parameter ->
-            ParameterRow(parameter, { _, _ -> }, showCheckbox = false)
-        }
-        rightPane.children.addAll(newRows)
+        rightListView.items.setAll(sorted)
     }
 
     private fun showError(title: String, message: String) {
