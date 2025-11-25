@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class MainViewController : Initializable {
-    @FXML private lateinit var fileNameLabel: Label
+    @FXML private lateinit var openFileButton: Button
     @FXML private lateinit var searchField: TextField
     @FXML private lateinit var exportButton: Button
     @FXML private lateinit var leftListView: ListView<Parameter>
@@ -121,7 +121,7 @@ class MainViewController : Initializable {
         if (file != null) {
             prefs.put("lastDirectory", file.parent)
             lastOpenedFileName = file.name
-            fileNameLabel.text = file.name
+            openFileButton.text = file.name
             loadParameters(file)
         }
     }
