@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ardupilot.paramextractor.ui.MainViewController">
+
+    <!-- Top Section: Menu and Search -->
+    <top>
+        <VBox>
+            <MenuBar>
+                <Menu text="File">
+                    <MenuItem onAction="#onOpenFile" text="Open..." />
+                </Menu>
+            </MenuBar>
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <Label text="Search:" />
+                <TextField fx:id="searchField" promptText="Filter parameters..." HBox.hgrow="ALWAYS" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Center: Three-Pane Layout -->
+    <center>
+        <HBox spacing="10">
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" />
+            </padding>
+
+            <!-- Left Pane: Original Parameters -->
+            <VBox maxWidth="550" minWidth="550" prefWidth="550" spacing="5">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" top="10.0" />
+                </padding>
+
+                <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Original Parameters" />
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="leftPane" spacing="5">
+                        <padding>
+                            <Insets bottom="5" left="5" right="5" top="5" />
+                        </padding>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Middle Pane: Category Filters -->
+            <VBox maxWidth="280" minWidth="280" prefWidth="280" spacing="5">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+
+                <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Parameter Categories" />
+
+                <VBox spacing="5">
+                    <HBox spacing="5">
+                        <Button maxWidth="Infinity" onAction="#onSelectAll" text="Select All" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" onAction="#onDeselectAll" text="Deselect All" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                    <Button maxWidth="Infinity" onAction="#onExport" text="Export" />
+                </VBox>
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="categoryPane" spacing="8">
+                        <padding>
+                            <Insets bottom="10" left="10" right="10" top="10" />
+                        </padding>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Right Pane: Filtered Parameters -->
+            <VBox maxWidth="550" minWidth="550" prefWidth="550" spacing="5">
+                <padding>
+                    <Insets bottom="10.0" right="10.0" top="10.0" />
+                </padding>
+
+                <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Filtered Parameters" />
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="rightPane" spacing="5">
+                        <padding>
+                            <Insets bottom="5" left="5" right="5" top="5" />
+                        </padding>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

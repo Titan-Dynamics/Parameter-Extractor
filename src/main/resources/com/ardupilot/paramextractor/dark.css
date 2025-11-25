@@ -1,0 +1,57 @@
+.root {
+    -fx-base:#222;
+    -fx-background:#222;
+    -fx-control-inner-background:#2b2b2b;
+    -fx-accent:#181818;
+}
+
+.label{
+    -fx-text-fill: lightgray;
+}
+
+.chart-title {
+  -fx-font-size: 1em;
+  -fx-font-family: "Arial Bold";
+}
+
+.chart-legend {
+   -fx-background-color: transparent;
+   -fx-padding: 8px 0px 0px 0px;
+}
+
+.tab-pane{
+    -fx-background-color: derive(-fx-base, 5%);
+}
+
+.text-field {
+    -fx-prompt-text-fill: gray;
+}
+
+.button{
+    -fx-focus-traversable: false;
+}
+
+.button:hover{
+    -fx-text-fill: white;
+}
+
+.button:default {
+    -fx-base: -fx-accent ;
+}
+
+.table-view .column-header .label{
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-weight: none;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: #333;
+    -fx-stroke-width: 1px;
+    -fx-stroke-dash-array: null; /* Optional: make dashed */
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #333;
+    -fx-stroke-width: 1px;
+    -fx-stroke-dash-array: null; /* Optional: make dashed */
+}

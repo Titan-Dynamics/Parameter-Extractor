@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:ardupilot.org)",
+      "Bash(mvn clean compile)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
