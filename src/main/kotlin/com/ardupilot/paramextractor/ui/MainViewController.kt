@@ -34,6 +34,8 @@ class MainViewController : Initializable {
     private var searchText = ""
     private var searchDebounceTask: CompletableFuture<Void>? = null
     private val categoryCheckBoxes = mutableMapOf<ParameterCategory, CheckBox>()
+    private val parameterRows = mutableListOf<ParameterRow>()
+    private val selectedParameters = mutableSetOf<Parameter>()
 
     var stage: Stage? = null
 
@@ -53,7 +55,7 @@ class MainViewController : Initializable {
 
         // Create new debounced task
         searchDebounceTask = CompletableFuture.runAsync({
-            Thread.sleep(1000)
+            Thread.sleep(250)
         }).thenRun {
             javafx.application.Platform.runLater {
                 searchText = newValue.lowercase()
@@ -89,20 +91,34 @@ class MainViewController : Initializable {
 
     @FXML
     private fun onSelectAll() {
-        categoryCheckBoxes.values.forEach { it.isSelected = true }
+        categoryCheckBoxes.values.forEach {
+            it.isSelected = true
+            it.isIndeterminate = false
+        }
+        parameterRows.forEach {
+            it.checkBox.isSelected = true
+            selectedParameters.add(it.parameter)
+        }
         updateFilteredParameters()
     }
 
     @FXML
     private fun onDeselectAll() {
-        categoryCheckBoxes.values.forEach { it.isSelected = false }
+        categoryCheckBoxes.values.forEach {
+            it.isSelected = false
+            it.isIndeterminate = false
+        }
+        parameterRows.forEach {
+            it.checkBox.isSelected = false
+            selectedParameters.remove(it.parameter)
+        }
         updateFilteredParameters()
     }
 
     @FXML
     private fun onExport() {
-        if (rightPane.children.isEmpty()) {
-            showError("No Data", "There are no filtered parameters to export.")
+        if (selectedParameters.isEmpty()) {
+            showError("No Data", "There are no selected parameters to export.")
             return
         }
 
@@ -129,9 +145,16 @@ class MainViewController : Initializable {
             try {
                 prefs.put("lastDirectory", file.parent)
 
-                val selectedCategories = categoryCheckBoxes.filter { it.value.isSelected }.keys
-                val filteredParameters = allParameters.filter { it.category in selectedCategories }
-                val content = parameterParser.exportParameters(filteredParameters)
+                val filteredBySearch = if (searchText.isEmpty()) {
+                    selectedParameters.toList()
+                } else {
+                    selectedParameters.filter {
+                        it.name.lowercase().contains(searchText) ||
+                        it.value.lowercase().contains(searchText)
+                    }
+                }
+
+                val content = parameterParser.exportParameters(filteredBySearch.sortedBy { it.name })
                 file.writeText(content)
 
                 showInfo("Export Successful", "Filtered parameters exported successfully to:\n${file.absolutePath}")
@@ -144,6 +167,8 @@ class MainViewController : Initializable {
     private fun loadParameters(file: File) {
         try {
             allParameters = parameterParser.parseParameterFile(file)
+            selectedParameters.clear()
+            selectedParameters.addAll(allParameters) // Select all by default
             updateCategoryCheckboxes()
             updateAllDisplays()
         } catch (e: Exception) {
@@ -162,7 +187,37 @@ class MainViewController : Initializable {
         }
 
         displayParameters(leftPane, filteredBySearch)
-        updateFilteredParameters(filteredBySearch)
+        updateFilteredParameters()
+    }
+
+    private fun onParameterSelectionChanged(parameter: Parameter, selected: Boolean) {
+        if (selected) {
+            selectedParameters.add(parameter)
+        } else {
+            selectedParameters.remove(parameter)
+        }
+        updateCategoryCheckboxState(parameter.category)
+        updateFilteredParameters()
+    }
+
+    private fun updateCategoryCheckboxState(category: ParameterCategory) {
+        val categoryCheckBox = categoryCheckBoxes[category] ?: return
+        val categoryParams = allParameters.filter { it.category == category }
+        val selectedCount = categoryParams.count { it in selectedParameters }
+
+        when {
+            selectedCount == 0 -> {
+                categoryCheckBox.isIndeterminate = false
+                categoryCheckBox.isSelected = false
+            }
+            selectedCount == categoryParams.size -> {
+                categoryCheckBox.isIndeterminate = false
+                categoryCheckBox.isSelected = true
+            }
+            else -> {
+                categoryCheckBox.isIndeterminate = true
+            }
+        }
     }
 
     private fun updateCategoryCheckboxes() {
@@ -176,7 +231,9 @@ class MainViewController : Initializable {
             .forEach { category ->
                 val checkBox = CheckBox(category.displayName).apply {
                     isSelected = true
-                    setOnAction { updateFilteredParameters() }
+                    isIndeterminate = false
+                    isAllowIndeterminate = true
+                    setOnAction { onCategoryCheckboxChanged(category, this) }
 
                     val indicator = Rectangle(12.0, 12.0, category.color)
                     graphic = indicator
@@ -188,7 +245,9 @@ class MainViewController : Initializable {
         if (ParameterCategory.OTHER in existingCategories) {
             val otherCheckBox = CheckBox(ParameterCategory.OTHER.displayName).apply {
                 isSelected = true
-                setOnAction { updateFilteredParameters() }
+                isIndeterminate = false
+                isAllowIndeterminate = true
+                setOnAction { onCategoryCheckboxChanged(ParameterCategory.OTHER, this) }
 
                 val indicator = Rectangle(12.0, 12.0, ParameterCategory.OTHER.color)
                 graphic = indicator
@@ -198,25 +257,62 @@ class MainViewController : Initializable {
         }
     }
 
+    private fun onCategoryCheckboxChanged(category: ParameterCategory, checkBox: CheckBox) {
+        if (checkBox.isIndeterminate) {
+            checkBox.isIndeterminate = false
+            checkBox.isSelected = true
+        }
+
+        val shouldSelect = checkBox.isSelected
+        val categoryParams = allParameters.filter { it.category == category }
+
+        categoryParams.forEach { param ->
+            if (shouldSelect) {
+                selectedParameters.add(param)
+            } else {
+                selectedParameters.remove(param)
+            }
+        }
+
+        // Update individual checkboxes
+        parameterRows.filter { it.parameter.category == category }
+            .forEach { it.checkBox.isSelected = shouldSelect }
+
+        updateFilteredParameters()
+    }
+
     private fun displayParameters(pane: VBox, parameters: List<Parameter>) {
         pane.children.clear()
+        parameterRows.clear()
+
         parameters.forEach { parameter ->
-            pane.children.add(ParameterRow(parameter))
+            val row = ParameterRow(
+                parameter = parameter,
+                onSelectionChanged = { param, selected ->
+                    onParameterSelectionChanged(param, selected)
+                }
+            )
+            row.checkBox.isSelected = parameter in selectedParameters
+            parameterRows.add(row)
+            pane.children.add(row)
         }
     }
 
-    private fun updateFilteredParameters(parametersToFilter: List<Parameter> = allParameters) {
-        val selectedCategories = categoryCheckBoxes.filter { it.value.isSelected }.keys
+    private fun updateFilteredParameters() {
+        rightPane.children.clear()
+
         val filteredBySearch = if (searchText.isEmpty()) {
-            parametersToFilter
+            selectedParameters.toList()
         } else {
-            parametersToFilter.filter {
+            selectedParameters.filter {
                 it.name.lowercase().contains(searchText) ||
                 it.value.lowercase().contains(searchText)
             }
         }
-        val filteredParameters = filteredBySearch.filter { it.category in selectedCategories }
-        displayParameters(rightPane, filteredParameters)
+
+        filteredBySearch.sortedBy { it.name }.forEach { parameter ->
+            rightPane.children.add(ParameterRow(parameter, { _, _ -> }, showCheckbox = false))
+        }
     }
 
     private fun showError(title: String, message: String) {
